@@ -33,6 +33,6 @@ public class SourceCompatibilityTests {
 		Assertions.assertEquals(JavaCore.VERSION_17, mercury.getSourceCompatibility());
 
 		mercury.setSourceCompatibilityFromRelease(99);
-		Assertions.assertEquals(JavaCore.VERSION_20, mercury.getSourceCompatibility());
+		Assertions.assertEquals(JavaCore.VERSION_23, mercury.getSourceCompatibility());
 	}
 }
