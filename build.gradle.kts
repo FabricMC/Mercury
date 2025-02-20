@@ -35,10 +35,9 @@ dependencyLocking {
 
 val jdtVersion = "org.eclipse.jdt:org.eclipse.jdt.core:3.40.0"
 dependencies {
-    // JDT pulls all of these deps in, however they do not specify the exact version to use so they can get updated without us knowing.
-    // Depend specifically on these versions to prevent them from being updated under our feet.
-    // The POM is also patched later on to as this strict versioning does not make it through.
-    "jdt" (jdtVersion)
+    "jdt" (jdtVersion) {
+        exclude(group = "net.java.dev.jna")
+    }
 
     // TODO: Split in separate modules
     api("org.cadixdev:at:0.1.0-rc1")
@@ -82,7 +81,7 @@ tasks["resetSources"].dependsOn(tasks.register("ensureTargetDirectory") {
 
 val renames = listOf(
         "org.eclipse.jdt.core.dom.rewrite" to "org.cadixdev.$artifactId.jdt.rewrite.imports",
-        "org.eclipse.jdt.internal.core.dom.rewrite.imports" to "org.cadixdev.$artifactId.jdt.internal.rewrite.imports"
+        "org.eclipse.jdt.internal.core.dom.rewrite.imports" to "org.cadixdev.$artifactId.jdt.internal.rewrite.imports",
 )
 
 fun createRenameTask(prefix: String, inputDir: File, outputDir: File, renames: List<Pair<String, String>>): Task
