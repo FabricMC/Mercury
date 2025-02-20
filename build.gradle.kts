@@ -33,7 +33,7 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
-val jdtVersion = "org.eclipse.jdt:org.eclipse.jdt.core:3.35.0"
+val jdtVersion = "org.eclipse.jdt:org.eclipse.jdt.core:3.40.0"
 dependencies {
     // JDT pulls all of these deps in, however they do not specify the exact version to use so they can get updated without us knowing.
     // Depend specifically on these versions to prevent them from being updated under our feet.

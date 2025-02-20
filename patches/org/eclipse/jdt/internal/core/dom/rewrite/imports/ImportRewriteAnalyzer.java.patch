@@ -1,23 +1,11 @@
 --- a/org/eclipse/jdt/internal/core/dom/rewrite/imports/ImportRewriteAnalyzer.java
 +++ b/org/eclipse/jdt/internal/core/dom/rewrite/imports/ImportRewriteAnalyzer.java
-@@ -46,8 +46,11 @@
- import org.eclipse.jdt.internal.core.JavaProject;
- import org.eclipse.jdt.internal.core.dom.rewrite.imports.ConflictIdentifier.Conflicts;
- import org.eclipse.jdt.internal.core.util.Util;
-+import org.eclipse.jface.text.BadLocationException;
-+import org.eclipse.jface.text.IDocument;
- import org.eclipse.jface.text.IRegion;
- import org.eclipse.jface.text.Region;
-+import org.eclipse.jface.text.TextUtilities;
- import org.eclipse.text.edits.TextEdit;
- 
- /**
-@@ -261,10 +264,10 @@
+@@ -250,10 +250,10 @@
  	}
  
  	private static RewriteSite determineRewriteSite(
 -			CompilationUnit compilationUnit, List<OriginalImportEntry> originalImports) throws JavaModelException {
-+			CompilationUnit compilationUnit, IDocument document, List<OriginalImportEntry> originalImports) throws JavaModelException {
++			CompilationUnit compilationUnit, org.eclipse.jface.text.IDocument document, List<OriginalImportEntry> originalImports) throws JavaModelException {
  		IRegion importsRegion = determineImportsRegion(originalImports);
  
 -		IRegion surroundingRegion = determineSurroundingRegion(compilationUnit, importsRegion);
@@ -25,16 +13,16 @@
  
  		boolean hasPrecedingElements = surroundingRegion.getOffset() != 0;
  
-@@ -302,7 +305,7 @@
+@@ -291,7 +291,7 @@
  	 * Determines the region to be occupied by imports, their associated comments, and surrounding
  	 * whitespace.
  	 */
 -	private static IRegion determineSurroundingRegion(CompilationUnit compilationUnit, IRegion importsRegion) throws JavaModelException {
-+	private static IRegion determineSurroundingRegion(CompilationUnit compilationUnit, IDocument document, IRegion importsRegion) throws JavaModelException {
++	private static IRegion determineSurroundingRegion(CompilationUnit compilationUnit, org.eclipse.jface.text.IDocument document, IRegion importsRegion) throws JavaModelException {
  		NavigableMap<Integer, ASTNode> nodesTreeMap = mapTopLevelNodes(compilationUnit);
  
  		int surroundingStart;
-@@ -331,12 +334,24 @@
+@@ -332,12 +332,24 @@
  		}
  
  		int surroundingEnd = positionAfterImports;
@@ -44,7 +32,7 @@
 +				while (surroundingEnd < length && Character.isWhitespace(document.getChar(surroundingEnd))) {
 +					surroundingEnd++;
 +				}
-+			} catch (BadLocationException e) {
++			} catch (org.eclipse.jface.text.BadLocationException e) {
 +				throw new RuntimeException(e);
 +			}
 +		} else {
@@ -59,15 +47,15 @@
  		return new Region(surroundingStart, surroundingEnd - surroundingStart);
  	}
  
-@@ -432,6 +447,7 @@
+@@ -433,6 +445,7 @@
  	public ImportRewriteAnalyzer(
  			ICompilationUnit cu,
  			CompilationUnit astRoot,
-+			IDocument document,
++			org.eclipse.jface.text.IDocument document,
  			ImportRewriteConfiguration configuration) throws JavaModelException {
  		this.originalImportEntries = Collections.unmodifiableList(readOriginalImports(astRoot));
  
-@@ -460,7 +476,7 @@
+@@ -461,7 +474,7 @@
  
  		ImportGroupComparator importGroupComparator = new ImportGroupComparator(configuration.importOrder);
  
@@ -76,7 +64,7 @@
  
  		this.importAdder = configuration.originalImportHandling.createImportAdder(new ImportComparator(
  				importGroupComparator,
-@@ -468,31 +484,39 @@
+@@ -469,31 +482,39 @@
  				configuration.staticContainerSorting.createContainerComparator(javaProject)));
  
  		this.implicitImportContainerNames =
@@ -105,7 +93,7 @@
 +		if (cu != null) {
  		this.lineDelimiter = cu.findRecommendedLineSeparator();
 +		} else {
-+			this.lineDelimiter = TextUtilities.getDefaultLineDelimiter(document);
++			this.lineDelimiter = org.eclipse.jface.text.TextUtilities.getDefaultLineDelimiter(document);
 +		}
  
  		this.importEditor = new ImportEditor(
@@ -120,7 +108,7 @@
  				this.importDeclarationWriter);
  	}
  
-@@ -566,18 +590,18 @@
+@@ -567,18 +588,18 @@
  
  		Set<ImportName> touchedContainers = determineTouchedContainers();
  
@@ -133,11 +121,11 @@
 -				progressMonitor);
 +				progressMonitor) : null;
  
- 		Set<String> allTypeExplicitSimpleNames = new HashSet<String>(this.typeExplicitSimpleNames);
+ 		Set<String> allTypeExplicitSimpleNames = new HashSet<>(this.typeExplicitSimpleNames);
 -		allTypeExplicitSimpleNames.addAll(conflicts.typeConflicts);
 +		if (conflicts != null) allTypeExplicitSimpleNames.addAll(conflicts.typeConflicts);
  
- 		Set<String> allStaticExplicitSimpleNames = new HashSet<String>(this.staticExplicitSimpleNames);
+ 		Set<String> allStaticExplicitSimpleNames = new HashSet<>(this.staticExplicitSimpleNames);
 -		allStaticExplicitSimpleNames.addAll(conflicts.staticConflicts);
 +		if (conflicts != null) allStaticExplicitSimpleNames.addAll(conflicts.staticConflicts);
  
