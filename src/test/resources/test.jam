@@ -32,10 +32,10 @@ CL anon/Test anon/Anon
 CL anon/Test$1 anon/Anon$3
 CL anon/Test$2 anon/Anon$1
 CL anon/Test$3 anon/Anon$2
-FD anon/Test$2 field I abc
+FD anon/Test$1 field I abc
 MD anon/Test$1 name (II)V remapped
-MD anon/Test$2 name (DD)V remapped
-MD anon/Test$3 name (ZZ)V remapped
+MD anon/Test$2 name (ZZ)V remapped
+MD anon/Test$3 name (DD)V remapped
 
 # Test 6. Import tests
 CL com/example/pkg/Constants net/example/pkg/Util
