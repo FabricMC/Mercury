@@ -8,11 +8,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-package example;
+package com.example;
 
 import com.example.other.AnotherClass;
 import static com.example.pkg.Constants.*;
 import com.example.other.OtherClass;
+import java.lang.String;
+import java.lang.Exception;
 
 public class ImportTest {
 

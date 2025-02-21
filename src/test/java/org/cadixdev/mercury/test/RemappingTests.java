@@ -122,7 +122,7 @@ class RemappingTests {
                 .withMappings(TinyUtils.createMappingProvider(mappingTree, "source", "target"))
                 .build();
 
-        tinyRemapper.readClassPath(Paths.get("build/classes/java/testA"));
+        tinyRemapper.readClassPath(Paths.get("build/classes/java/testInput"));
 
         // Run Mercury
         final Mercury mercury = new Mercury();
