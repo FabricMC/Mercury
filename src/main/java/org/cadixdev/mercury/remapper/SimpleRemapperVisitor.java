@@ -86,10 +86,6 @@ class SimpleRemapperVisitor extends ASTVisitor {
             return;
         }
 
-        if (binding.getName().equals("field")) {
-            System.out.println();
-        }
-
         String name = remapper.mapFieldName(declaringClass.getBinaryName(), binding.getName(), fieldDesc(binding));
         updateIdentifier(node, name);
     }

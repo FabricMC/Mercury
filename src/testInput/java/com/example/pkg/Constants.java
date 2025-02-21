@@ -11,9 +11,4 @@
 package com.example.pkg;
 
 public class Constants {
-
-    public static final String NAME = "George";
-    public static final String BIRTHDAY = "1st June";
-    public static final String VERSION = "1";
-
 }

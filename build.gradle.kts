@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.bsh.commands.dir
 import java.util.concurrent.Callable
 
 plugins {
@@ -22,6 +23,16 @@ configurations {
     register("jdt")
 }
 configurations["api"].extendsFrom(configurations["jdt"])
+
+sourceSets {
+    val testInput by creating {
+    }
+    val test by getting {
+        compileClasspath += testInput.output
+        runtimeClasspath += testInput.output
+        resources.srcDir(file("src/testInput/java"))
+    }
+}
 
 repositories {
     mavenCentral()
@@ -48,7 +59,8 @@ dependencies {
 
     "jdtSources"("$jdtVersion:sources")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.cadixdev:lorenz-io-jam:0.5.7")
 }

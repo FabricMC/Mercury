@@ -43,11 +43,11 @@ class ParameterTest<T> {
     }
 
     public String advancedTest0(int i, int b) {
-        BiFunction<Integer, Integer, Integer> function = new BiFunction<Integer, Integer, Integer>() {
+        BiFunction<Integer, Integer, String> function = new BiFunction<Integer, Integer, String>() {
             final int ii = i;
 
             @Override
-            public Integer apply(Integer integer, Integer integer2) {
+            public String apply(Integer integer, Integer integer2) {
                 return Integer.toString(integer, integer2);
             }
         };

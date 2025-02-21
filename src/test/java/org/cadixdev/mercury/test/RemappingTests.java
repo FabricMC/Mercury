@@ -17,7 +17,8 @@ import net.fabricmc.tinyremapper.TinyUtils;
 import org.cadixdev.mercury.Mercury;
 import org.cadixdev.mercury.remapper.MercuryRemapper;
 import org.eclipse.jdt.core.JavaCore;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -26,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
+import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,8 +59,29 @@ class RemappingTests {
     //    combinations (GH-31).
     // 6. Import remapping tests (GH-28)
 
-    @Test
-    void remap() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // - Test 1
+            "Core.java",
+            "JavadocTest.java",
+            "NameQualifiedTest.java",
+            // - Test 2
+            // "ParameterTest.java",
+            // - Test 3
+            // "OverrideChild.java",
+            // "OverrideParent.java",
+            // - Test 4
+            // "eclipse/X.java",
+            // "eclipse/Test.java",
+            // - Test 5
+            "anon/Anon.java",
+            // - Test 6
+            "net/example/ImportTestNew.java",
+            "net/example/newother/AnotherClass.java",
+            "net/example/newother/OtherClass.java",
+            "net/example/pkg/Util.java"
+    })
+    void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
         final Path in = tempDir.resolve("a");
         final Path out = tempDir.resolve("b");
@@ -110,24 +133,7 @@ class RemappingTests {
 
         // Check that the output is as expected
         // - Test 1
-        this.verify(out, "Core.java");
-        this.verify(out, "JavadocTest.java");
-        this.verify(out, "NameQualifiedTest.java");
-        // - Test 2
-        //this.verify(out, "ParameterTest.java");
-        // - Test 3
-        //this.verify(out, "OverrideChild.java");
-        //this.verify(out, "OverrideParent.java");
-        // - Test 4
-        //this.verify(out, "eclipse/X.java");
-        //this.verify(out, "eclipse/Test.java");
-        // - Test 5
-        this.verify(out, "anon/Anon.java");
-        // - Test 6
-        this.verify(out, "net/example/ImportTestNew.java");
-        this.verify(out, "net/example/newother/AnotherClass.java");
-        this.verify(out, "net/example/newother/OtherClass.java");
-        this.verify(out, "net/example/pkg/Util.java");
+        this.verify(out, file);
 
         // Delete the directory
         Files.walk(tempDir)
@@ -146,7 +152,7 @@ class RemappingTests {
 
         // Copy the file to the file system
         Files.copy(
-                RemappingTests.class.getResourceAsStream("/a/" + file),
+                Objects.requireNonNull(RemappingTests.class.getClassLoader().getResourceAsStream(file), file),
                 path,
                 StandardCopyOption.REPLACE_EXISTING
         );
