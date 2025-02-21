@@ -25,6 +25,9 @@ configurations["api"].extendsFrom(configurations["jdt"])
 
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.fabricmc.net/")
+    }
 }
 
 // Update with: ./gradlew dependencies --write-locks
@@ -39,9 +42,9 @@ dependencies {
         exclude(group = "net.java.dev.jna")
     }
 
-    // TODO: Split in separate modules
-    api("org.cadixdev:at:0.1.0-rc1")
-    api("org.cadixdev:lorenz:0.5.7")
+    implementation("net.fabricmc:mapping-io:0.7.1")
+    api("net.fabricmc:tiny-remapper:0.11.0")
+    compileOnly("org.jetbrains:annotations:26.0.2")
 
     "jdtSources"("$jdtVersion:sources")
 

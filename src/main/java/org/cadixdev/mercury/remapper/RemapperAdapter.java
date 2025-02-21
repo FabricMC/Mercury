@@ -1,0 +1,78 @@
+/*
+ * Copyright (c) 2018 Cadix Development (https://www.cadixdev.org)
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which accompanies this distribution,
+ * and is available at https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+
+package org.cadixdev.mercury.remapper;
+
+import net.fabricmc.tinyremapper.api.TrClass;
+import net.fabricmc.tinyremapper.api.TrEnvironment;
+import net.fabricmc.tinyremapper.api.TrMethod;
+import net.fabricmc.tinyremapper.api.TrRemapper;
+import org.jetbrains.annotations.Nullable;
+
+public record RemapperAdapter(TrEnvironment trEnvironment) {
+    public TrRemapper remapper() {
+        return trEnvironment.getRemapper();
+    }
+
+    @Nullable
+    public TrClass getClass(String name) {
+        return trEnvironment.getClass(name.replace('.', '/'));
+    }
+
+    @Nullable
+    public TrMethod getMethod(String owner, String name, String desc) {
+        TrClass trClass = getClass(owner);
+
+        if (trClass == null) {
+            return null;
+        }
+
+        return trClass.resolveMethod(name, desc);
+    }
+
+    public String mapClass(String name) {
+        return remapper().map(name.replace(".", "/")).replace("/", ".");
+    }
+
+    public String mapMethodName(final String owner, final String name, final String descriptor) {
+        return remapper().mapMethodName(owner.replace(".", "/"), name, descriptor);
+    }
+
+    public String mapFieldName(final String owner, final String name, final String descriptor) {
+        return remapper().mapFieldName(owner.replace(".", "/"), name, descriptor);
+    }
+
+    public String mapMethodArg(String methodOwner, String methodName, String methodDesc, int lvIndex, String name) {
+        return remapper().mapMethodArg(methodOwner.replace(".", "/"), methodName, methodDesc, lvIndex, name);
+    }
+
+    public String getDeobfuscatedPackage(TrClass trClass) {
+        String fullName = mapClass(trClass.getName());
+        if (fullName.indexOf('.') == -1) {
+            return "";
+        }
+        return fullName.substring(0, fullName.lastIndexOf('.'));
+    }
+
+    public String getSimpleDeobfuscatedName(TrClass trClass) {
+        String fullName = mapClass(trClass.getName());
+        return fullName.substring(fullName.lastIndexOf('.') + 1);
+    }
+
+    // TODO is this the same as mapClass?
+    public String getFullDeobfuscatedName(TrClass trClass) {
+        return mapClass(trClass.getName());
+    }
+
+    public String getSimpleObfuscatedName(TrClass trClass) {
+        String fullName = trClass.getName();
+        return fullName.substring(fullName.lastIndexOf('/') + 1);
+    }
+}

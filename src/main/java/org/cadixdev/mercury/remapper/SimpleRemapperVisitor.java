@@ -10,20 +10,9 @@
 
 package org.cadixdev.mercury.remapper;
 
-import static org.cadixdev.mercury.util.BombeBindings.convertSignature;
-
-import org.cadixdev.bombe.analysis.InheritanceProvider;
-import org.cadixdev.bombe.type.signature.FieldSignature;
-import org.cadixdev.bombe.type.signature.MethodSignature;
-import org.cadixdev.lorenz.MappingSet;
-import org.cadixdev.lorenz.model.ClassMapping;
-import org.cadixdev.lorenz.model.FieldMapping;
-import org.cadixdev.lorenz.model.InnerClassMapping;
-import org.cadixdev.lorenz.model.MemberMapping;
-import org.cadixdev.lorenz.model.MethodMapping;
-import org.cadixdev.lorenz.model.MethodParameterMapping;
+import net.fabricmc.tinyremapper.api.TrEnvironment;
+import net.fabricmc.tinyremapper.api.TrMethod;
 import org.cadixdev.mercury.RewriteContext;
-import org.cadixdev.mercury.analysis.MercuryInheritanceProvider;
 import org.cadixdev.mercury.util.GracefulCheck;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -41,10 +30,7 @@ import org.eclipse.jdt.core.dom.VariableDeclaration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
-import java.util.function.BiFunction;
 
 /**
  * Remaps only methods, fields, and parameters.
@@ -56,14 +42,12 @@ class SimpleRemapperVisitor extends ASTVisitor {
     private static final String NEW_PARAM_NAMES_PROPERTY = "org.cadixdev.mercury.newParamNames";
 
     final RewriteContext context;
-    final MappingSet mappings;
-    private final InheritanceProvider inheritanceProvider;
+    final RemapperAdapter remapper;
 
-    SimpleRemapperVisitor(RewriteContext context, MappingSet mappings, boolean javadoc) {
+    SimpleRemapperVisitor(RewriteContext context, boolean javadoc, TrEnvironment trEnvironment) {
         super(javadoc);
         this.context = context;
-        this.mappings = mappings;
-        this.inheritanceProvider = MercuryInheritanceProvider.get(context.getMercury());
+        this.remapper = new RemapperAdapter(trEnvironment);
     }
 
     final void updateIdentifier(SimpleName node, String newName) {
@@ -77,17 +61,12 @@ class SimpleRemapperVisitor extends ASTVisitor {
         if (GracefulCheck.checkGracefully(this.context, declaringClass)) {
             return;
         }
-        final ClassMapping<?, ?> classMapping = this.mappings.getOrCreateClassMapping(declaringClass.getBinaryName());
 
         if (binding.isConstructor()) {
-            updateIdentifier(node, classMapping.getSimpleDeobfuscatedName());
+            updateIdentifier(node, remapper.mapClass(declaringClass.getBinaryName()));
         } else {
-            final MethodMapping mapping = findMethodMapping(declaringClass, binding);
-            if (mapping == null) {
-                return;
-            }
-
-            updateIdentifier(node, mapping.getDeobfuscatedName());
+            String name = remapper.mapMethodName(declaringClass.getBinaryName(), binding.getName(), methodDesc(binding));
+            updateIdentifier(node, name);
         }
     }
 
@@ -107,96 +86,59 @@ class SimpleRemapperVisitor extends ASTVisitor {
             return;
         }
 
-        ClassMapping<?, ?> classMapping = this.mappings.getClassMapping(declaringClass.getBinaryName()).orElse(null);
-        if (classMapping == null) {
-            return;
+        if (binding.getName().equals("field")) {
+            System.out.println();
         }
 
-        FieldSignature bindingSignature = convertSignature(binding);
-        FieldMapping mapping = findMemberMapping(bindingSignature, classMapping, ClassMapping::computeFieldMapping);
-        if (mapping == null) {
-            return;
-        }
-
-        updateIdentifier(node, mapping.getDeobfuscatedName());
+        String name = remapper.mapFieldName(declaringClass.getBinaryName(), binding.getName(), fieldDesc(binding));
+        updateIdentifier(node, name);
     }
 
-    private MethodMapping findMethodMapping(ITypeBinding declaringClass, IMethodBinding declaringMethod) {
-        final ClassMapping<?, ?> classMapping = this.mappings.getClassMapping(declaringClass.getBinaryName()).orElse(null);
-        if (classMapping == null) {
-            return null;
-        }
+    public static String methodDesc(IMethodBinding binding) {
+        ITypeBinding[] parameterBindings = binding.getParameterTypes();
+        StringBuilder signature = new StringBuilder("(");
 
-        final MethodSignature methodSig = convertSignature(declaringMethod);
-        MethodMapping methodMapping = findMemberMapping(methodSig, classMapping, ClassMapping::getMethodMapping);
-        if (methodMapping == null) {
-            classMapping.complete(this.inheritanceProvider, declaringClass);
-            methodMapping = classMapping.getMethodMapping(methodSig).orElse(null);
-        }
+        for (ITypeBinding parameterBinding : parameterBindings) {
+            if (!parameterBinding.isPrimitive()) {
+                signature.append("L");
+            }
 
-        return methodMapping;
-    }
+            signature.append(parameterBinding.getBinaryName().replace(".", "/"));
 
-    private <T extends MemberMapping<?, ?>, M> T findMemberMapping(
-        M matcher,
-        ClassMapping<?, ?> classMapping,
-        BiFunction<ClassMapping<?, ?>, M, Optional<? extends T>> getMapping
-    ) {
-        T mapping = getMapping.apply(classMapping, matcher).orElse(null);
-        if (mapping != null) {
-            return mapping;
-        }
-
-        if (!this.context.getMercury().isFlexibleAnonymousClassMemberLookups()) {
-            return null;
-        }
-        return findMemberMappingAnonClass(matcher, classMapping, getMapping);
-    }
-
-    private <T extends MemberMapping<?, ?>, M> T findMemberMappingAnonClass(
-        M matcher,
-        ClassMapping<?, ?> classMapping,
-        BiFunction<ClassMapping<?, ?>, M, Optional<? extends T>> getMapping
-    ) {
-        // If neither name is different then this method won't do anything
-        if (Objects.equals(classMapping.getObfuscatedName(), classMapping.getDeobfuscatedName())) {
-            return null;
-        }
-        // Anonymous classes must be inner classes
-        if (!(classMapping instanceof InnerClassMapping)) {
-            return null;
-        }
-        // Verify this is inner class is anonymous
-        if (!classMapping.getObfuscatedName().chars().allMatch(Character::isDigit)) {
-            return null;
-        }
-        ClassMapping<?, ?> parentMapping = ((InnerClassMapping) classMapping).getParent();
-        if (parentMapping == null) {
-            return null;
-        }
-
-        // Find a sibling anonymous class whose obfuscated name is our deobfuscated name
-        ClassMapping<?, ?> otherClassMapping = parentMapping
-                .getInnerClassMapping(classMapping.getDeobfuscatedName()).orElse(null);
-        if (otherClassMapping != null) {
-            T mapping = getMapping.apply(otherClassMapping, matcher).orElse(null);
-            if (mapping != null) {
-                return mapping;
+            if (!parameterBinding.isPrimitive()) {
+                signature.append(";");
             }
         }
 
-        // Find a sibling anonymous class whose deobfuscated name is our obfuscated name
-        // We have to do something a little less direct for this case
-        for (InnerClassMapping innerClassMapping : parentMapping.getInnerClassMappings()) {
-            if (Objects.equals(classMapping.getObfuscatedName(), innerClassMapping.getDeobfuscatedName())) {
-                otherClassMapping = innerClassMapping;
-                break;
-            }
+        signature.append(")");
+
+        if (!binding.getReturnType().isPrimitive()) {
+            signature.append("L");
         }
-        if (otherClassMapping == null) {
-            return null;
+
+        signature.append(binding.getReturnType().getBinaryName().replace(".", "/"));
+
+        if (!binding.getReturnType().isPrimitive()) {
+            signature.append(";");
         }
-        return getMapping.apply(otherClassMapping, matcher).orElse(null);
+
+        return signature.toString();
+    }
+
+    public String fieldDesc(IVariableBinding binding) {
+        StringBuilder signature = new StringBuilder();
+
+        if (!binding.getType().isPrimitive()) {
+            signature.append("L");
+        }
+
+        signature.append(binding.getType().getBinaryName().replace(".", "/"));
+
+        if (!binding.getType().isPrimitive()) {
+            signature.append(";");
+        }
+
+        return signature.toString();
     }
 
     private void remapParameter(SimpleName node, IVariableBinding binding) {
@@ -231,12 +173,10 @@ class SimpleRemapperVisitor extends ASTVisitor {
             return;
         }
 
-        final MethodMapping methodMapping = findMethodMapping(declaringClass, declaringMethod);
-        if (methodMapping == null) {
-            return;
+        String newName = remapper.mapMethodArg(declaringClass.getBinaryName(), declaringMethod.getName(), methodDesc(declaringMethod), index, null);
+        if (newName != null) {
+            updateIdentifier(node, newName);
         }
-
-        methodMapping.getParameterMapping(index).ifPresent(paramMapping -> updateIdentifier(node, paramMapping.getDeobfuscatedName()));
     }
 
     /**
@@ -322,17 +262,14 @@ class SimpleRemapperVisitor extends ASTVisitor {
             Block body
     ) {
         final ITypeBinding declaringClass = binding.getDeclaringClass();
-        this.mappings.getClassMapping(declaringClass.getBinaryName())
-                .flatMap(classMapping -> {
-                    classMapping.complete(this.inheritanceProvider, declaringClass);
-                    return classMapping.getMethodMapping(convertSignature(binding));
-                })
-                .ifPresent(methodMapping -> {
-                    if (!methodMapping.getParameterMappings().isEmpty()) {
-                        final Set<String> newParamNames = newParamNames(declaration, methodMapping);
-                        checkLocalVariableForConflicts(node, bindingNode, blockDeclaringMethod, body, newParamNames);
-                    }
-                });
+        final TrMethod method = remapper.getMethod(declaringClass.getBinaryName(), binding.getName(), methodDesc(binding));
+
+        if (method == null) {
+            return;
+        }
+
+        final Set<String> newParamNames = newParamNames(declaration, method);
+        checkLocalVariableForConflicts(node, bindingNode, blockDeclaringMethod, body, newParamNames);
     }
 
     /**
@@ -431,10 +368,10 @@ class SimpleRemapperVisitor extends ASTVisitor {
      * {@code mapping}. Return the list of params post-remap.
      *
      * @param methodDeclaration The method declaration to check the parameter names on.
-     * @param mapping The mapping to use to determine the new parameter names
+     * @param method The method to use to determine the new parameter names
      * @return The set of parameter names after remapping them with {@code mapping}.
      */
-    private Set<String> newParamNames(MethodDeclaration methodDeclaration, MethodMapping mapping) {
+    private Set<String> newParamNames(MethodDeclaration methodDeclaration, TrMethod method) {
         Set<String> result = checkProperty(NEW_PARAM_NAMES_PROPERTY, methodDeclaration);
         if (result != null) {
             return result;
@@ -445,12 +382,8 @@ class SimpleRemapperVisitor extends ASTVisitor {
         @SuppressWarnings("unchecked")
         List<SingleVariableDeclaration> parameters = methodDeclaration.parameters();
         for (int i = 0; i < parameters.size(); i++) {
-            final Optional<MethodParameterMapping> paramMapping = mapping.getParameterMapping(i);
-            if (paramMapping.isPresent()) {
-                result.add(paramMapping.get().getDeobfuscatedName());
-            } else {
-                result.add(parameters.get(i).getName().getIdentifier());
-            }
+            final String paramMapping = remapper.mapMethodArg(method.getOwner().getName(), method.getName(), method.getDesc(), i, parameters.get(i).getName().getIdentifier());
+            result.add(paramMapping);
         }
 
         return result;
@@ -495,5 +428,4 @@ class SimpleRemapperVisitor extends ASTVisitor {
         }
         return false;
     }
-
 }
