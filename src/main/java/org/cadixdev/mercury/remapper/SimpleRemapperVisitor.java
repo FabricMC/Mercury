@@ -95,46 +95,30 @@ class SimpleRemapperVisitor extends ASTVisitor {
         StringBuilder signature = new StringBuilder("(");
 
         for (ITypeBinding parameterBinding : parameterBindings) {
-            if (!parameterBinding.isPrimitive()) {
-                signature.append("L");
-            }
-
-            signature.append(parameterBinding.getBinaryName().replace(".", "/"));
-
-            if (!parameterBinding.isPrimitive()) {
-                signature.append(";");
-            }
+            signature.append(convertType(parameterBinding));
         }
 
         signature.append(")");
 
-        if (!binding.getReturnType().isPrimitive()) {
-            signature.append("L");
-        }
-
-        signature.append(binding.getReturnType().getBinaryName().replace(".", "/"));
-
-        if (!binding.getReturnType().isPrimitive()) {
-            signature.append(";");
-        }
+        signature.append(convertType(binding.getReturnType()));
 
         return signature.toString();
     }
 
     public String fieldDesc(IVariableBinding binding) {
-        StringBuilder signature = new StringBuilder();
+        return convertType(binding.getType());
+    }
 
-        if (!binding.getType().isPrimitive()) {
-            signature.append("L");
+    public static String convertType(ITypeBinding binding) {
+        if (binding.isPrimitive()) {
+            return String.valueOf(binding.getBinaryName().charAt(0));
         }
 
-        signature.append(binding.getType().getBinaryName().replace(".", "/"));
-
-        if (!binding.getType().isPrimitive()) {
-            signature.append(";");
+        if (binding.isArray()) {
+            return "[" + convertType(binding.getElementType());
         }
 
-        return signature.toString();
+        return "L" + binding.getErasure().getBinaryName().replace(".", "/") + ";";
     }
 
     private void remapParameter(SimpleName node, IVariableBinding binding) {
