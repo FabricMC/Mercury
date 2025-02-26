@@ -63,7 +63,7 @@ class SimpleRemapperVisitor extends ASTVisitor {
         }
 
         if (binding.isConstructor()) {
-            updateIdentifier(node, remapper.mapClass(declaringClass.getBinaryName()));
+            updateIdentifier(node, remapper.mapSimpleDeobfuscatedName(declaringClass.getBinaryName()));
         } else {
             String name = remapper.mapMethodName(declaringClass.getBinaryName(), binding.getName(), methodDesc(binding));
             updateIdentifier(node, name);

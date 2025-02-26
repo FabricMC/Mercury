@@ -12,10 +12,12 @@ package com.example;
 
 public class InnerTest {
     public static class InnerRenamed {
-        public static final InnerRenamed instance = new InnerRenamed();
+        public static class InnerInner {
+            public static final InnerRenamed instance = new InnerRenamed();
+        }
     }
 
     public static InnerRenamed inner() {
-        return InnerRenamed.instance;
+        return InnerRenamed.InnerInner.instance;
     }
 }
