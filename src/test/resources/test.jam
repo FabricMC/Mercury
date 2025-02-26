@@ -42,3 +42,6 @@ CL com/example/pkg/Constants net/example/pkg/Util
 CL com/example/ImportTest net/example/ImportTestNew
 CL com/example/other/OtherClass net/example/newother/OtherClass
 CL com/example/other/AnotherClass net/example/newother/AnotherClass
+
+# Test 7. Rename inner class
+CL com/example/InnerTest$Inner net/example/InnerTest$InnerRenamed

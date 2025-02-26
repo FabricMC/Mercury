@@ -111,7 +111,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
             return;
         }
 
-        String qualifiedName = (mapping != null ? remapper.getFullDeobfuscatedName(mapping).replace('/', '.') : binding.getBinaryName()).replace('$', '.');
+        String qualifiedName = (mapping != null ? remapper.getFullDeobfuscatedName(mapping) : binding.getBinaryName()).replace('$', '.');
 
         if(!node.isVar()) {
             String newName = this.importRewrite.addImport(qualifiedName, this.importStack.peek());
@@ -152,10 +152,14 @@ class RemapperVisitor extends SimpleRemapperVisitor {
             throw new IllegalStateException("No binary name for " + outerClass.getQualifiedName());
         }
 
-        // TODO is this right?
+        // Given the name of the outer class and inner class (Such as "Inner.Other", remap just the innner class name
         String fullInnerName = binaryName + '$' + qualifiedName.getName().getIdentifier();
+        TrClass outer = remapper.getClass(binaryName);
+        TrClass inner = remapper.getClass(fullInnerName);
+        String deobfInnerName = remapper.getSimpleDeobfuscatedName(inner);
+
         SimpleName node = qualifiedName.getName();
-        updateIdentifier(node, remapper.mapClass(fullInnerName));
+        updateIdentifier(node, deobfInnerName);
     }
 
     @Override
@@ -322,7 +326,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
                     }
 
                     TrClass mapping = remapper.getClass(name);
-                    if (mapping != null && !name.equals(remapper.getFullDeobfuscatedName(mapping).replace('/', '.'))) {
+                    if (mapping != null && !name.equals(remapper.getFullDeobfuscatedName(mapping))) {
                         this.importRewrite.removeImport(typeBinding.getQualifiedName());
                     } else if (this.simpleDeobfuscatedName != null && this.simpleDeobfuscatedName.equals(typeBinding.getName())) {
                         this.importRewrite.removeImport(typeBinding.getQualifiedName());
@@ -373,7 +377,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
             String qualifiedName;
             if (mapping != null) {
                 simpleName = remapper.getSimpleDeobfuscatedName(mapping);
-                qualifiedName = remapper.getFullDeobfuscatedName(mapping).replace('/', '.').replace('$', '.');
+                qualifiedName = remapper.getFullDeobfuscatedName(mapping).replace('$', '.');
             } else {
                 simpleName = inner.getName();
                 qualifiedName = inner.getBinaryName().replace('$', '.');

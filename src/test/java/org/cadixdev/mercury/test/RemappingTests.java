@@ -79,7 +79,9 @@ class RemappingTests {
             "net/example/ImportTestNew.java",
             "net/example/newother/AnotherClass.java",
             "net/example/newother/OtherClass.java",
-            "net/example/pkg/Util.java"
+            "net/example/pkg/Util.java",
+            // - Test 7
+            "com/example/InnerTest.java"
     })
     void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
@@ -110,6 +112,8 @@ class RemappingTests {
         this.copy(in, "com/example/other/AnotherClass.java");
         this.copy(in, "com/example/other/OtherClass.java");
         this.copy(in, "com/example/pkg/Constants.java");
+        // - Test 7
+        this.copy(in, "com/example/InnerTest.java");
 
         // Load our test mappings
         MemoryMappingTree mappingTree = new MemoryMappingTree();
@@ -165,7 +169,7 @@ class RemappingTests {
         final Path path = dir.resolve(file);
 
         // First check the path exists
-        assertTrue(Files.exists(path), file + " doesn't exists!");
+        assertTrue(Files.exists(path), path + " doesn't exists!");
 
         // Check the file matches the expected output
         final String expected;

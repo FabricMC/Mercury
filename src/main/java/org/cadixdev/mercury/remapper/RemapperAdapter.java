@@ -53,6 +53,7 @@ public record RemapperAdapter(TrEnvironment trEnvironment) {
         return remapper().mapMethodArg(methodOwner.replace(".", "/"), methodName, methodDesc, lvIndex, name);
     }
 
+    // Returns the package of the class, e.g "com.example"
     public String getDeobfuscatedPackage(TrClass trClass) {
         String fullName = mapClass(trClass.getName());
         if (fullName.indexOf('.') == -1) {
@@ -61,14 +62,16 @@ public record RemapperAdapter(TrEnvironment trEnvironment) {
         return fullName.substring(0, fullName.lastIndexOf('.'));
     }
 
+    // Returns the name of the class without the package or without the outer class
     public String getSimpleDeobfuscatedName(TrClass trClass) {
-        String fullName = mapClass(trClass.getName());
-        return fullName.substring(fullName.lastIndexOf('.') + 1);
+        String name = mapClass(trClass.getName());
+        String fullName = name.substring(name.lastIndexOf('.') + 1);
+        return fullName.contains("$") ? fullName.substring(fullName.lastIndexOf('$') + 1) : fullName;
     }
 
     // TODO is this the same as mapClass?
     public String getFullDeobfuscatedName(TrClass trClass) {
-        return mapClass(trClass.getName());
+        return mapClass(trClass.getName()).replace('/', '.');
     }
 
     public String getSimpleObfuscatedName(TrClass trClass) {
