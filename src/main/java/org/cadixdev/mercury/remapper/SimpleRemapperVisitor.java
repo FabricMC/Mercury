@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Remaps only methods, fields, and parameters.
  */
-class SimpleRemapperVisitor extends ASTVisitor {
+public class SimpleRemapperVisitor extends ASTVisitor {
 
     private static final String LVT_NAMES_PROPERTY = "org.cadixdev.mercury.lvtNames";
     private static final String LOCAL_VARIABLE_NAME_PROPERTY = "org.cadixdev.mercury.localVariableName";

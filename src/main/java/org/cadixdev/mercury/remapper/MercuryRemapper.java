@@ -13,6 +13,7 @@ package org.cadixdev.mercury.remapper;
 import net.fabricmc.tinyremapper.api.TrEnvironment;
 import org.cadixdev.mercury.RewriteContext;
 import org.cadixdev.mercury.SourceRewriter;
+import org.cadixdev.mercury.remapper.mixin.MixinRemapperVisitor;
 
 import java.util.Objects;
 
@@ -54,6 +55,9 @@ public final class MercuryRemapper implements SourceRewriter {
         context.getCompilationUnit().accept(this.simple ?
                 new SimpleRemapperVisitor(context, this.javadoc, this.trEnvironment) :
                 new RemapperVisitor(context, this.javadoc, this.trEnvironment));
+
+        // TODO add an option to turn this on/off
+        context.getCompilationUnit().accept(new MixinRemapperVisitor(context, this.trEnvironment));
     }
 
 }

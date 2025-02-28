@@ -39,6 +39,7 @@ repositories {
     maven {
         url = uri("https://maven.fabricmc.net/")
     }
+    mavenLocal()
 }
 
 // Update with: ./gradlew dependencies --write-locks
@@ -54,7 +55,7 @@ dependencies {
     }
 
     implementation("net.fabricmc:mapping-io:0.7.1")
-    api("net.fabricmc:tiny-remapper:0.11.0")
+    api("net.fabricmc:tiny-remapper:0.11.0+local")
     compileOnly("org.jetbrains:annotations:26.0.2")
 
     "jdtSources"("$jdtVersion:sources")
@@ -63,6 +64,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.cadixdev:lorenz-io-jam:0.5.7")
+
+    testImplementation("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
+    "testInputImplementation"("net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7")
 }
 
 tasks.withType<Javadoc> {
