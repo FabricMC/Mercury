@@ -66,7 +66,7 @@ public record RemapperAdapter(TrEnvironment trEnvironment) {
         TrClass trClass = getClass(name);
 
         if (trClass == null) {
-            return name;
+            return toSimpleName(name);
         }
 
         return getSimpleDeobfuscatedName(trClass);
@@ -75,6 +75,10 @@ public record RemapperAdapter(TrEnvironment trEnvironment) {
     // Returns the name of the class without the package or without the outer class
     public String getSimpleDeobfuscatedName(TrClass trClass) {
         String name = mapClass(trClass.getName());
+        return toSimpleName(name);
+    }
+
+    private String toSimpleName(String name) {
         String fullName = name.substring(name.lastIndexOf('.') + 1);
         return fullName.contains("$") ? fullName.substring(fullName.lastIndexOf('$') + 1) : fullName;
     }

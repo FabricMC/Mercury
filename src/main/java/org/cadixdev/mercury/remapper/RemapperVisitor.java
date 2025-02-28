@@ -159,23 +159,6 @@ class RemapperVisitor extends SimpleRemapperVisitor {
         updateIdentifier(node, deobfInnerName);
     }
 
-    private static int getNthIndexFromEnd(String str, int n) {
-        if (str == null || n <= 0) {
-            throw new IllegalArgumentException("Invalid value of n or string is null");
-        }
-
-        int count = 0;
-        for (int i = str.length() - 1; i >= 0; i--) {
-            if (str.charAt(i) == '.') {
-                count++;
-                if (count == n) {
-                    return i;
-                }
-            }
-        }
-        return -1; // return -1 if the nth occurrence is not found
-    }
-
     @Override
     protected void visit(SimpleName node, IBinding binding) {
         switch (binding.getKind()) {

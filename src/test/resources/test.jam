@@ -45,3 +45,6 @@ CL com/example/other/AnotherClass net/example/newother/AnotherClass
 
 # Test 7. Rename inner class
 CL com/example/InnerTest$Inner net/example/InnerTest$InnerRenamed
+
+# Test 8. Rename bridge method
+MD Bridge getT ()Ljava/lang/Object; getRenamed

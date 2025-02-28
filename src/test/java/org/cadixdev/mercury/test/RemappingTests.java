@@ -81,7 +81,9 @@ class RemappingTests {
             "net/example/newother/OtherClass.java",
             "net/example/pkg/Util.java",
             // - Test 7
-            "com/example/InnerTest.java"
+            "com/example/InnerTest.java",
+            // - Test 8
+            "Bridge.Java"
     })
     void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
@@ -114,6 +116,8 @@ class RemappingTests {
         this.copy(in, "com/example/pkg/Constants.java");
         // - Test 7
         this.copy(in, "com/example/InnerTest.java");
+        // - Test 8
+        this.copy(in, "Bridge.java");
 
         // Load our test mappings
         MemoryMappingTree mappingTree = new MemoryMappingTree();
@@ -124,9 +128,10 @@ class RemappingTests {
 
         TinyRemapper tinyRemapper = TinyRemapper.newRemapper()
                 .withMappings(TinyUtils.createMappingProvider(mappingTree, "source", "target"))
+                .propagateBridges(TinyRemapper.LinkedMethodPropagation.COMPATIBLE)
                 .build();
 
-        tinyRemapper.readClassPath(Paths.get("build/classes/java/testInput"));
+        tinyRemapper.readInputs(Paths.get("build/classes/java/testInput"));
 
         // Run Mercury
         final Mercury mercury = new Mercury();
