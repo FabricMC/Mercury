@@ -16,7 +16,7 @@ public abstract class NameQualifiedTest {
 
   public abstract void testInnerClass(final Attributes.@NonNull Name name);
 
-  public abstract void testQualifiedInner(final java.nio.file.WatchEvent.@NonNull Kind<?> event)
+  public abstract void testQualifiedInner(final java.nio.file.WatchEvent.@NonNull Kind<?> event);
 
   public abstract void testFullyQualifed(final java.net.@NonNull URL url);
 

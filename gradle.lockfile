@@ -1,11 +1,12 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-org.apiguardian:apiguardian-api:1.1.0=testCompileClasspath,testRuntimeClasspath
-org.cadixdev:at:0.1.0-rc1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-org.cadixdev:bombe:0.3.4=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+net.fabricmc:mapping-io:0.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+net.fabricmc:tiny-remapper:0.11.0=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.apiguardian:apiguardian-api:1.1.2=testCompileClasspath
+org.cadixdev:bombe:0.3.4=testRuntimeClasspath
 org.cadixdev:lorenz-io-jam:0.5.7=testRuntimeClasspath
-org.cadixdev:lorenz:0.5.7=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.cadixdev:lorenz:0.5.7=testRuntimeClasspath
 org.eclipse.jdt:ecj:3.40.0=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.eclipse.jdt:org.eclipse.jdt.core:3.40.0=compileClasspath,jdt,jdtSources,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.eclipse.platform:org.eclipse.core.commands:3.12.200=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
@@ -21,12 +22,19 @@ org.eclipse.platform:org.eclipse.equinox.preferences:3.11.200=compileClasspath,j
 org.eclipse.platform:org.eclipse.equinox.registry:3.12.200=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.eclipse.platform:org.eclipse.osgi:3.22.0=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.eclipse.platform:org.eclipse.text:3.14.200=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-org.junit.jupiter:junit-jupiter-api:5.7.0=testCompileClasspath,testRuntimeClasspath
-org.junit.jupiter:junit-jupiter-engine:5.7.0=testRuntimeClasspath
-org.junit.platform:junit-platform-commons:1.7.0=testCompileClasspath,testRuntimeClasspath
-org.junit.platform:junit-platform-engine:1.7.0=testRuntimeClasspath
-org.junit:junit-bom:5.7.0=testCompileClasspath,testRuntimeClasspath
-org.opentest4j:opentest4j:1.2.0=testCompileClasspath,testRuntimeClasspath
+org.jetbrains:annotations:26.0.2=compileClasspath
+org.junit.jupiter:junit-jupiter-api:5.11.4=testCompileClasspath,testRuntimeClasspath
+org.junit.jupiter:junit-jupiter-engine:5.11.4=testRuntimeClasspath
+org.junit.jupiter:junit-jupiter-params:5.11.4=testCompileClasspath,testRuntimeClasspath
+org.junit.platform:junit-platform-commons:1.11.4=testCompileClasspath,testRuntimeClasspath
+org.junit.platform:junit-platform-engine:1.11.4=testRuntimeClasspath
+org.junit:junit-bom:5.11.4=testCompileClasspath,testRuntimeClasspath
+org.opentest4j:opentest4j:1.3.0=testCompileClasspath,testRuntimeClasspath
 org.osgi:org.osgi.service.prefs:1.1.2=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.osgi:osgi.annotation:8.0.1=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-empty=annotationProcessor,shadow,testAnnotationProcessor
+org.ow2.asm:asm-analysis:9.7.1=runtimeClasspath,testRuntimeClasspath
+org.ow2.asm:asm-commons:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.ow2.asm:asm-tree:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.ow2.asm:asm-util:9.7.1=runtimeClasspath,testRuntimeClasspath
+org.ow2.asm:asm:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+empty=annotationProcessor,shadow,testAAnnotationProcessor,testACompileClasspath,testARuntimeClasspath,testAnnotationProcessor,testInputAnnotationProcessor,testInputCompileClasspath,testInputRuntimeClasspath

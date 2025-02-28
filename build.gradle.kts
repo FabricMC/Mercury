@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.bsh.commands.dir
 import java.util.concurrent.Callable
 
 plugins {
@@ -23,8 +24,21 @@ configurations {
 }
 configurations["api"].extendsFrom(configurations["jdt"])
 
+sourceSets {
+    val testInput by creating {
+    }
+    val test by getting {
+        compileClasspath += testInput.output
+        runtimeClasspath += testInput.output
+        resources.srcDir(file("src/testInput/java"))
+    }
+}
+
 repositories {
     mavenCentral()
+    maven {
+        url = uri("https://maven.fabricmc.net/")
+    }
 }
 
 // Update with: ./gradlew dependencies --write-locks
@@ -39,13 +53,14 @@ dependencies {
         exclude(group = "net.java.dev.jna")
     }
 
-    // TODO: Split in separate modules
-    api("org.cadixdev:at:0.1.0-rc1")
-    api("org.cadixdev:lorenz:0.5.7")
+    implementation("net.fabricmc:mapping-io:0.7.1")
+    api("net.fabricmc:tiny-remapper:0.11.0")
+    compileOnly("org.jetbrains:annotations:26.0.2")
 
     "jdtSources"("$jdtVersion:sources")
 
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.7.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.4")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.4")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testRuntimeOnly("org.cadixdev:lorenz-io-jam:0.5.7")
 }

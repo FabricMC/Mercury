@@ -10,26 +10,27 @@
 
 package org.cadixdev.mercury.test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.cadixdev.bombe.util.ByteStreams;
-import org.cadixdev.lorenz.MappingSet;
-import org.cadixdev.lorenz.io.MappingFormats;
-import org.cadixdev.lorenz.io.MappingsReader;
+import net.fabricmc.mappingio.format.srg.JamFileReader;
+import net.fabricmc.mappingio.tree.MemoryMappingTree;
+import net.fabricmc.tinyremapper.TinyRemapper;
+import net.fabricmc.tinyremapper.TinyUtils;
 import org.cadixdev.mercury.Mercury;
 import org.cadixdev.mercury.remapper.MercuryRemapper;
 import org.eclipse.jdt.core.JavaCore;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Comparator;
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RemappingTests {
 
@@ -58,8 +59,33 @@ class RemappingTests {
     //    combinations (GH-31).
     // 6. Import remapping tests (GH-28)
 
-    @Test
-    void remap() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // - Test 1
+            "Core.java",
+            "JavadocTest.java",
+            "NameQualifiedTest.java",
+            // - Test 2
+            // "ParameterTest.java",
+            // - Test 3
+            // "OverrideChild.java",
+            // "OverrideParent.java",
+            // - Test 4
+            // "eclipse/X.java",
+            // "eclipse/Test.java",
+            // - Test 5
+            "anon/Anon.java",
+            // - Test 6
+            "net/example/ImportTestNew.java",
+            "net/example/newother/AnotherClass.java",
+            "net/example/newother/OtherClass.java",
+            "net/example/pkg/Util.java",
+            // - Test 7
+            "com/example/InnerTest.java",
+            // - Test 8
+            "Bridge.java"
+    })
+    void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
         final Path in = tempDir.resolve("a");
         final Path out = tempDir.resolve("b");
@@ -88,47 +114,43 @@ class RemappingTests {
         this.copy(in, "com/example/other/AnotherClass.java");
         this.copy(in, "com/example/other/OtherClass.java");
         this.copy(in, "com/example/pkg/Constants.java");
+        // - Test 7
+        this.copy(in, "com/example/InnerTest.java");
+        // - Test 8
+        this.copy(in, "Bridge.java");
 
         // Load our test mappings
-        final MappingSet mappings = MappingSet.create();
-        try (final MappingsReader reader = MappingFormats.byId("jam")
-                .createReader(RemappingTests.class.getResourceAsStream("/test.jam"))) {
-            reader.read(mappings);
+        MemoryMappingTree mappingTree = new MemoryMappingTree();
+
+        try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(RemappingTests.class.getResourceAsStream("/test.jam")))) {
+            JamFileReader.read(bufferedReader, mappingTree);
         }
+
+        TinyRemapper tinyRemapper = TinyRemapper.newRemapper()
+                .withMappings(TinyUtils.createMappingProvider(mappingTree, "source", "target"))
+                .propagateBridges(TinyRemapper.LinkedMethodPropagation.COMPATIBLE)
+                .build();
+
+        tinyRemapper.readInputs(Paths.get("build/classes/java/testInput"));
 
         // Run Mercury
         final Mercury mercury = new Mercury();
         mercury.setSourceCompatibility(JavaCore.VERSION_11);
-        mercury.getProcessors().add(MercuryRemapper.create(mappings));
+        mercury.getProcessors().add(MercuryRemapper.create(tinyRemapper.getEnvironment()));
         mercury.setFlexibleAnonymousClassMemberLookups(true);
         mercury.rewrite(in, out);
 
         // Check that the output is as expected
         // - Test 1
-        this.verify(out, "Core.java");
-        this.verify(out, "JavadocTest.java");
-        this.verify(out, "NameQualifiedTest.java");
-        // - Test 2
-        this.verify(out, "ParameterTest.java");
-        // - Test 3
-        //this.verify(out, "OverrideChild.java");
-        //this.verify(out, "OverrideParent.java");
-        // - Test 4
-        //this.verify(out, "eclipse/X.java");
-        //this.verify(out, "eclipse/Test.java");
-        // - Test 5
-        this.verify(out, "anon/Anon.java");
-        // - Test 6
-        this.verify(out, "net/example/ImportTestNew.java");
-        this.verify(out, "net/example/newother/AnotherClass.java");
-        this.verify(out, "net/example/newother/OtherClass.java");
-        this.verify(out, "net/example/pkg/Util.java");
+        this.verify(out, file);
 
         // Delete the directory
         Files.walk(tempDir)
                 .sorted(Comparator.reverseOrder())
                 .map(Path::toFile)
                 .forEach(File::delete);
+
+        tinyRemapper.finish();
     }
 
     void copy(final Path dir, final String file) throws IOException {
@@ -139,7 +161,7 @@ class RemappingTests {
 
         // Copy the file to the file system
         Files.copy(
-                RemappingTests.class.getResourceAsStream("/a/" + file),
+                Objects.requireNonNull(RemappingTests.class.getClassLoader().getResourceAsStream(file), file),
                 path,
                 StandardCopyOption.REPLACE_EXISTING
         );
@@ -152,14 +174,12 @@ class RemappingTests {
         final Path path = dir.resolve(file);
 
         // First check the path exists
-        assertTrue(Files.exists(path), file + " doesn't exists!");
+        assertTrue(Files.exists(path), path + " doesn't exists!");
 
         // Check the file matches the expected output
         final String expected;
         try (final InputStream in = RemappingTests.class.getResourceAsStream("/b/" + file)) {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ByteStreams.copy(in, baos);
-            expected = baos.toString();
+            expected = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
         final String actual = new String(Files.readAllBytes(path));
         assertEquals(expected, actual, "Remapped code for " + file + " does not match expected");

@@ -2,11 +2,10 @@ Mercury
 =======
 
 Mercury is a source code transformation library for Java codebases, with an
-included remapper - built on [Eclipse's JDT] and [Lorenz]. Mercury is licensed
+included remapper - built on [Eclipse's JDT] and [tiny-remapper]. Mercury is licensed
 under the [Eclipse Public License 2.0](LICENSE).
 
-While Mercury is yet to see a proper release (we're working on it), it has
-been successfully used by the following projects:
+While Mercury is used by the following projects:
 
 - **[The Fabric Project]** uses Mercury in their
   [Gradle build tools](https://fabricmc.net/wiki/tutorial:migratemappings) to
@@ -36,30 +35,6 @@ mercury.getProcessors().add(MercuryRemapper.create(mappings));
 mercury.rewrite(Paths.get("a"), Paths.get("b"));
 ```
 
-### Rewrite access transformers
-
-Mercury also has an optional dependency on [at], allowing access transformers
-to be applied to source, and be updated to reflect changes in the structure of
-the codebase. *See the following example to see how this could work*.
-
-```java
-final Mercury mercury = new Mercury();
-mercury.getClassPath().add(Paths.get("example.jar"));
-mercury.getProcessors().add(MercuryRemapper.create(mappings));
-
-// Since we run after MercuryRemapper, the access transformer needs to be
-// remapped - fortunately, at provides an optional dependency on Lorenz,
-// and a utility to do just that!
-final AccessTransformSet remappedTransforms =
-            AccessTransformSetMapper.remap(transforms, mappings);
-// We can then use AccessTransformerRewriter with the remapped access
-// transform set.
-mercury.getProcessors()
-            .add(AccessTransformerRewriter.create(remappedTransforms));
-
-mercury.rewrite(Paths.get("a"), Paths.get("b"));
-```
-
 ## See Also
 
 There is beginning to be tooling designed to work with Mercury, these may be
@@ -77,7 +52,6 @@ We have an IRC channel on [EsperNet], `#cadix`, which is available for all
 and discuss Mercury and other Cadix projects.
 
 [Eclipse's JDT]: https://www.eclipse.org/jdt/
-[Lorenz]: https://github.com/CadixDev/Lorenz
 [The Fabric Project]: https://fabricmc.net/
 [The Sponge Project]: https://www.spongepowered.org/
 [at]: https://github.com/CadixDev/at
