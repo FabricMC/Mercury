@@ -14,40 +14,11 @@ import net.fabricmc.tinyremapper.api.TrClass;
 import net.fabricmc.tinyremapper.api.TrEnvironment;
 import org.cadixdev.mercury.RewriteContext;
 import org.cadixdev.mercury.jdt.rewrite.imports.ImportRewrite;
-import org.cadixdev.mercury.util.GracefulCheck;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnnotatableType;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnonymousClassDeclaration;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
-import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.NameQualifiedType;
-import org.eclipse.jdt.core.dom.PackageDeclaration;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.QualifiedType;
-import org.eclipse.jdt.core.dom.RecordDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SimpleType;
-import org.eclipse.jdt.core.dom.TagElement;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.*;
 import org.eclipse.jdt.core.dom.rewrite.ASTRewrite;
 import org.eclipse.jdt.core.dom.rewrite.ListRewrite;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 class RemapperVisitor extends SimpleRemapperVisitor {
 
@@ -91,7 +62,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
     }
 
     private void remapType(SimpleName node, ITypeBinding binding) {
-        if (binding.isTypeVariable() || GracefulCheck.checkGracefully(this.context, binding)) {
+        if (binding.isTypeVariable() || checkGracefully(binding)) {
             return;
         }
 
@@ -129,7 +100,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
     private void remapQualifiedType(QualifiedName node, ITypeBinding binding) {
         String binaryName = binding.getBinaryName();
         if (binaryName == null) {
-            if (this.context.getMercury().isGracefulClasspathChecks() || this.context.getMercury().isGracefulJavadocClasspathChecks() && GracefulCheck.isJavadoc(node)) {
+            if (this.context.getMercury().isGracefulClasspathChecks() || this.context.getMercury().isGracefulJavadocClasspathChecks() && isJavadoc(node)) {
                 return;
             }
             throw new IllegalStateException("No binary name for " + binding.getQualifiedName());
@@ -348,7 +319,7 @@ class RemapperVisitor extends SimpleRemapperVisitor {
 
         // Names from inner classes
         for (ITypeBinding inner : binding.getDeclaredTypes()) {
-            if (GracefulCheck.checkGracefully(this.context, inner)) {
+            if (checkGracefully(inner)) {
                 continue;
             }
 
@@ -510,5 +481,15 @@ class RemapperVisitor extends SimpleRemapperVisitor {
 
     public static boolean isPackagePrivate(int modifiers) {
         return (modifiers & (Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE)) == 0;
+    }
+
+    public boolean isJavadoc(final ASTNode node) {
+        for (ASTNode current = node; current != null; current = current.getParent()) {
+            if (current instanceof Javadoc) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

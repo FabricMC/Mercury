@@ -13,19 +13,7 @@ package org.cadixdev.mercury.remapper;
 import net.fabricmc.tinyremapper.api.TrEnvironment;
 import net.fabricmc.tinyremapper.api.TrMethod;
 import org.cadixdev.mercury.RewriteContext;
-import org.cadixdev.mercury.util.GracefulCheck;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.LambdaExpression;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.*;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -58,7 +46,7 @@ class SimpleRemapperVisitor extends ASTVisitor {
 
     private void remapMethod(SimpleName node, IMethodBinding binding) {
         ITypeBinding declaringClass = binding.getDeclaringClass();
-        if (GracefulCheck.checkGracefully(this.context, declaringClass)) {
+        if (checkGracefully(declaringClass)) {
             return;
         }
 
@@ -407,5 +395,9 @@ class SimpleRemapperVisitor extends ASTVisitor {
             visit(node, binding);
         }
         return false;
+    }
+
+    public boolean checkGracefully(final ITypeBinding binding) {
+        return context.getMercury().isGracefulClasspathChecks() && binding.getBinaryName() == null;
     }
 }

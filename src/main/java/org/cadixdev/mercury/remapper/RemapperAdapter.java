@@ -83,7 +83,6 @@ public record RemapperAdapter(TrEnvironment trEnvironment) {
         return fullName.contains("$") ? fullName.substring(fullName.lastIndexOf('$') + 1) : fullName;
     }
 
-    // TODO is this the same as mapClass?
     public String getFullDeobfuscatedName(TrClass trClass) {
         return mapClass(trClass.getName()).replace('/', '.');
     }
