@@ -83,7 +83,7 @@ class RemappingTests {
             // - Test 7
             "com/example/InnerTest.java",
             // - Test 8
-            "Bridge.Java"
+            "Bridge.java"
     })
     void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
