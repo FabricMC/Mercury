@@ -18,7 +18,7 @@ import test.ObfClass;
 
 @Mixin(ObfClass.class)
 public class SimpleMixin {
-    @Inject(method = "name", at = @At("HEAD"))
+    @Inject(method = "name", at = @At(value = "INVOKE", target = "Ltest/ObfClass;name()Ljava/lang/String;"))
     private static void inject(CallbackInfoReturnable<String> cir) {
     }
 }

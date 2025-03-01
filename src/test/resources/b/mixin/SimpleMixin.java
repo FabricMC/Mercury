@@ -18,7 +18,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Core.class)
 public class SimpleMixin {
-    @Inject(method = "firstName()Ljava/lang/String;", at = @At("HEAD"))
+    @Inject(method = "firstName()Ljava/lang/String;", at = @At(value = "INVOKE", target = "LCore;firstName()Ljava/lang/String;"))
     private static void inject(CallbackInfoReturnable<String> cir) {
     }
 }
