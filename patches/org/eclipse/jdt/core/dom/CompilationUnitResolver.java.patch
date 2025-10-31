@@ -1,0 +1,11 @@
+--- a/org/eclipse/jdt/core/dom/CompilationUnitResolver.java
++++ b/org/eclipse/jdt/core/dom/CompilationUnitResolver.java
+@@ -1073,6 +1073,8 @@
+ 						// remove at the end so that we don't resolve twice if a source and a key for the same file name have been requested
+ 						this.requestedKeys.put(fileName, null); // mark it as removed
+ 					}
++				} catch (Exception e) {
++                    throw new RuntimeException("Failed to process " + new String(unit.compilationResult.getFileName()) + " " + e.getMessage(), e);
+ 				} finally {
+ 					// cleanup compilation unit result
+ 					unit.cleanUp();
