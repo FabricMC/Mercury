@@ -33,7 +33,7 @@ dependencyLocking {
     lockMode.set(LockMode.STRICT)
 }
 
-val jdtVersion = "org.eclipse.jdt:org.eclipse.jdt.core:3.40.0"
+val jdtVersion = "org.eclipse.jdt:org.eclipse.jdt.core:3.43.0"
 dependencies {
     "jdt" (jdtVersion) {
         exclude(group = "net.java.dev.jna")
