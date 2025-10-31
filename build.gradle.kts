@@ -68,6 +68,7 @@ val extract = task<Copy>("extractJdt") {
     destinationDir = patches.rootDir
 
     include("org/eclipse/jdt/core/dom/rewrite/ImportRewrite.java")
+    include("org/eclipse/jdt/core/dom/CompilationUnitResolver.java")
     include("org/eclipse/jdt/internal/core/dom/rewrite/imports/*.java")
 }
 tasks["applyPatches"].inputs.files(extract)
