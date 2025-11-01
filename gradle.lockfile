@@ -1,8 +1,11 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
+com.google.code.gson:gson:2.2.4=testCompileClasspath,testInputCompileClasspath,testInputRuntimeClasspath,testRuntimeClasspath
+com.google.guava:guava:21.0=testCompileClasspath,testInputCompileClasspath,testInputRuntimeClasspath,testRuntimeClasspath
 net.fabricmc:mapping-io:0.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-net.fabricmc:tiny-remapper:0.11.0=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+net.fabricmc:sponge-mixin:0.15.4+mixin.0.8.7=testCompileClasspath,testInputCompileClasspath,testInputRuntimeClasspath,testRuntimeClasspath
+net.fabricmc:tiny-remapper:0.11.0+local=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.apiguardian:apiguardian-api:1.1.2=testCompileClasspath
 org.cadixdev:bombe:0.3.4=testRuntimeClasspath
 org.cadixdev:lorenz-io-jam:0.5.7=testRuntimeClasspath
@@ -32,9 +35,14 @@ org.junit:junit-bom:5.11.4=testCompileClasspath,testRuntimeClasspath
 org.opentest4j:opentest4j:1.3.0=testCompileClasspath,testRuntimeClasspath
 org.osgi:org.osgi.service.prefs:1.1.2=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.osgi:osgi.annotation:8.0.1=compileClasspath,jdt,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.ow2.asm:asm-analysis:9.6=testCompileClasspath,testInputCompileClasspath,testInputRuntimeClasspath
 org.ow2.asm:asm-analysis:9.7.1=runtimeClasspath,testRuntimeClasspath
+org.ow2.asm:asm-commons:9.6=testInputCompileClasspath,testInputRuntimeClasspath
 org.ow2.asm:asm-commons:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.ow2.asm:asm-tree:9.6=testInputCompileClasspath,testInputRuntimeClasspath
 org.ow2.asm:asm-tree:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.ow2.asm:asm-util:9.6=testCompileClasspath,testInputCompileClasspath,testInputRuntimeClasspath
 org.ow2.asm:asm-util:9.7.1=runtimeClasspath,testRuntimeClasspath
+org.ow2.asm:asm:9.6=testInputCompileClasspath,testInputRuntimeClasspath
 org.ow2.asm:asm:9.7.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
-empty=annotationProcessor,shadow,testAAnnotationProcessor,testACompileClasspath,testARuntimeClasspath,testAnnotationProcessor,testInputAnnotationProcessor,testInputCompileClasspath,testInputRuntimeClasspath
+empty=annotationProcessor,shadow,testAAnnotationProcessor,testACompileClasspath,testARuntimeClasspath,testAnnotationProcessor,testInputAnnotationProcessor

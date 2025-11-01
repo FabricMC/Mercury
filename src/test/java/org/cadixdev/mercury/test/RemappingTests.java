@@ -19,6 +19,7 @@ import org.cadixdev.mercury.remapper.MercuryRemapper;
 import org.eclipse.jdt.core.JavaCore;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.spongepowered.asm.mixin.Mixin;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -83,7 +84,9 @@ class RemappingTests {
             // - Test 7
             "com/example/InnerTest.java",
             // - Test 8
-            "Bridge.java"
+            "Bridge.java",
+            // - Test Mixin
+            "mixin/SimpleMixin.java",
     })
     void remap(String file) throws Exception {
         final Path tempDir = Files.createTempDirectory("mercury-test");
@@ -118,6 +121,8 @@ class RemappingTests {
         this.copy(in, "com/example/InnerTest.java");
         // - Test 8
         this.copy(in, "Bridge.java");
+        // - Test Mixin
+        this.copy(in, "mixin/SimpleMixin.java");
 
         // Load our test mappings
         MemoryMappingTree mappingTree = new MemoryMappingTree();
@@ -126,11 +131,14 @@ class RemappingTests {
             JamFileReader.read(bufferedReader, mappingTree);
         }
 
+        Path mixinJar = Paths.get(Mixin.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+
         TinyRemapper tinyRemapper = TinyRemapper.newRemapper()
                 .withMappings(TinyUtils.createMappingProvider(mappingTree, "source", "target"))
                 .propagateBridges(TinyRemapper.LinkedMethodPropagation.COMPATIBLE)
                 .build();
 
+        tinyRemapper.readClassPath(mixinJar);
         tinyRemapper.readInputs(Paths.get("build/classes/java/testInput"));
 
         // Run Mercury
@@ -138,6 +146,7 @@ class RemappingTests {
         mercury.setSourceCompatibility(JavaCore.VERSION_11);
         mercury.getProcessors().add(MercuryRemapper.create(tinyRemapper.getEnvironment()));
         mercury.setFlexibleAnonymousClassMemberLookups(true);
+        mercury.getClassPath().add(mixinJar);
         mercury.rewrite(in, out);
 
         // Check that the output is as expected
